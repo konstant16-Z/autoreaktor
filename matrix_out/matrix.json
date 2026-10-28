@@ -1,42 +1,82 @@
 [
  {
-  "cell": "con48x86|full",
-  "result": "run-recovered",
-  "restored": 220,
-  "bodies": 258,
+  "cell": "con48x86|necro",
+  "result": "run-recovered-base-only",
+  "restored": null,
+  "bodies": null,
   "runnable": true,
-  "secs": 55.9
+  "secs": 494.6
+ },
+ {
+  "cell": "con48x86|full",
+  "result": "run-recovered-base-only",
+  "restored": 254,
+  "bodies": 259,
+  "runnable": true,
+  "secs": 740.4
+ },
+ {
+  "cell": "con48x64|necro",
+  "result": "run-recovered-base-only",
+  "restored": null,
+  "bodies": 0,
+  "runnable": true,
+  "secs": 210.6
  },
  {
   "cell": "con48x64|full",
-  "result": "slayer-clean",
+  "result": "run-recovered-base-only",
   "restored": null,
   "bodies": 0,
+  "runnable": true,
+  "secs": 437.9
+ },
+ {
+  "cell": "con8|necro",
+  "result": "slayer-clean",
+  "restored": 171,
+  "bodies": 171,
   "runnable": false,
-  "secs": 13.9
+  "secs": 335.2
  },
  {
   "cell": "con8|full",
   "result": "slayer-clean",
-  "restored": 230,
-  "bodies": 265,
+  "restored": 223,
+  "bodies": 231,
   "runnable": false,
-  "secs": 50.6
+  "secs": 384.3
+ },
+ {
+  "cell": "gen48x86|necro",
+  "result": "run-recovered-base-only",
+  "restored": 171,
+  "bodies": 181,
+  "runnable": true,
+  "secs": 712.5
  },
  {
   "cell": "gen48x86|full",
-  "result": "run-recovered",
-  "restored": 221,
+  "result": "run-recovered-base-only",
+  "restored": 255,
   "bodies": 258,
   "runnable": true,
-  "secs": 83.3
+  "secs": 688.6
+ },
+ {
+  "cell": "forms48x86|necro",
+  "result": "run-recovered-base-only",
+  "restored": 171,
+  "bodies": 182,
+  "runnable": true,
+  "secs": 402.6
  },
  {
   "cell": "forms48x86|full",
-  "result": "slayer-clean",
-  "restored": 225,
-  "bodies": 263,
-  "runnable": false,
-  "secs": 67.9
+  "result": "run-recovered-base-only",
+  "restored": 259,
+  "bodies": 264,
+  "runnable": true,
+  "secs": 430.6
  }
 ]

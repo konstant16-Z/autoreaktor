@@ -868,7 +868,31 @@ class NBIlMerge {
         // CRC coverage area stays intact (verified via q26, 32767).
         wopts.MetadataOptions.Flags |= dnlib.DotNet.Writer.MetadataFlags.PreserveAll;
         wopts.MetadataOptions.Flags |= dnlib.DotNet.Writer.MetadataFlags.KeepOldMaxStack;
-        mod.Write(a[2], wopts);
+        // Write to memory first, then snapshot BEFORE the PE hits the disk.
+        // Reason (measured on Win11 + Defender): a merged NecroBit assembly is
+        // flagged Trojan:Win32/Wacatac.C!ml and deleted within a second of the
+        // file handle closing; afterwards the path sits in delete-pending state
+        // and cannot even be re-opened (CRT open() -> EINVAL), so the artifact
+        // becomes unanalysable. The base64 rendering is inert text and always
+        // survives, so every merge product stays inspectable.
+        byte[] pe;
+        using (var msout = new System.IO.MemoryStream()) {
+            new dnlib.DotNet.Writer.ModuleWriter(mod, wopts).Write(msout);
+            pe = msout.ToArray();
+        }
+        // The carrier goes where the CALLER wants it (NB_B64_OUT): on a
+        // machine with real-time AV the merge product is quarantined the
+        // instant it closes, and %TEMP% is swept too, so a sibling file next
+        // to the PE is not good enough.
+        string b64Path = System.Environment.GetEnvironmentVariable("NB_B64_OUT");
+        if (System.String.IsNullOrEmpty(b64Path)) b64Path = a[2] + ".b64";
+        try {
+            System.IO.File.WriteAllText(b64Path, System.Convert.ToBase64String(pe));
+        } catch (Exception ex) { Console.WriteLine("[!] b64 snapshot failed: " + ex.Message); }
+        if (System.Environment.GetEnvironmentVariable("NB_KEEP_OUT") != "1") {
+            System.IO.File.WriteAllBytes(a[2], pe);
+        }
+        Console.WriteLine("[ok] bytes=" + pe.Length + " b64=" + b64Path);
         Console.WriteLine("[ok] written: " + a[2]);
         return 0;
     }

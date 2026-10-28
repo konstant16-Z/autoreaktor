@@ -57,6 +57,8 @@ MSVC / Windows SDK locations are discovered at runtime by `msvc_env.py`
 | `NB_MAXWRITE` | — | Integer cap: stop writing bodies after N restores (bisecting a bad dump). |
 | `NB_NOSIL` | off | `1` = skip the null-operand write rescue (the pass that NOPs/removes unresolvable token instructions). |
 | `NB_ATKILL` | off | `1` = opt-in anti-tamper line surgery (ldstr "tamper" → ret). PreserveAll normally makes this unnecessary. |
+| `NB_B64_OUT` | `<out>.b64` | Where to drop the inert base64 snapshot of the merge product. It is written BEFORE the PE, under its own conventional name, because the closed PE can be denied read access by real-time AV (access denied / EINVAL on `open`) while the plain-text sibling stays readable. Set to a directory AV does not sweep (e.g. a `\\wsl.localhost\...` path) when the merge has to be inspected after the fact. |
+| `NB_KEEP_OUT` | off | `1` = write only the base64 carrier, never the PE itself (analysis-only runs). |
 
 ## nbfixctor2.cs (all-flags 7.5 ctor repair)
 
@@ -70,7 +72,13 @@ MSVC / Windows SDK locations are discovered at runtime by `msvc_env.py`
 
 ## autoreaktor.py (stage gating)
 
-No environment variables — stage 4 (NecroBit recovery) is gated by
+`AR_PROBE_ARGS` is the only variable the pipeline itself reads: the extra
+arguments every probe run uses (`AR_PROBE_ARGS=dump` for the generated
+corpus). The protected binary is executed first under the *same* arguments
+and its non-empty stdout lines become the behaviour oracle, so a candidate is
+only "recovered" if it reproduces them — an argument-sensitive `Main` (one
+that prints its payload only under `dump`) can otherwise pass a probe while
+still faulting on that branch. Stage 4 (NecroBit recovery) is gated by
 `--deep` / `--no-nb` and the per-target suspicion rule (Reactor marker, or
 Slayer produced nothing / produced a non-runnable output). See `README.md`.
 

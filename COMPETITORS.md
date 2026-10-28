@@ -40,9 +40,19 @@ and repos at the time of writing.
 
 ## Where the field is ahead — our backlog
 
-1. **x64 alive-with-output**: our x64 leg reaches a live process; the
-   NecroBit runtime's table-init needs line surgery (keep init, cut the
-   embedded check) instead of whole-method cuts. Addressed next.
+1. **x64 alive-with-output**: CLOSED as "not the body merge". `ilverify`
+   shows the 254-body merge is exactly as IL-valid as the pristine module;
+   what blocks it is the packer's VM - rewriting the PE through dnlib
+   (measured with **zero** bodies written) is already enough to fault
+   NecroBit's VM entry, which reads its own image by offset. Whole-method
+   `ccfix` cuts do not help: they remove the init together with the check.
+   The honest cell label is therefore `run-recovered-base-only`, and the
+   remaining work is an offset-preserving rewrite (write bodies in place, no
+   metadata/section relocation) rather than more cutting.
+   The x64 **hook** is a separate, still-open item: the install gate was fixed
+   (`mscoree.dll`, not `clr.dll`, is what exists at attach time) and it does
+   hook - 244 bodies in one run - but it is not stable, crashing the target
+   (`0xC0000005`) or attaching without installing on repeat runs.
 2. **JitUnpacker's runtime breadth**: it covers Framework 2.0-3.5;
    our hook targets 4.x. Low priority (Reactor 7.x targets are 4.x),
    but noted for completeness.
