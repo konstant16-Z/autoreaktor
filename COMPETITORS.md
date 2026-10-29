@@ -49,10 +49,16 @@ and repos at the time of writing.
    The honest cell label is therefore `run-recovered-base-only`, and the
    remaining work is an offset-preserving rewrite (write bodies in place, no
    metadata/section relocation) rather than more cutting.
-   The x64 **hook** is a separate, still-open item: the install gate was fixed
-   (`mscoree.dll`, not `clr.dll`, is what exists at attach time) and it does
-   hook - 244 bodies in one run - but it is not stable, crashing the target
-   (`0xC0000005`) or attaching without installing on repeat runs.
+   The x64 **dump** path is fixed by removing a self-inflicted hazard: the hook
+   used to force-load the framework `clrjit.dll` at attach time (inside the
+   injection APC, when only `mscoree.dll` is mapped), which on x64 either gave
+   a not-initialised JIT (`getJit() -> null`) or killed the target with
+   `0xC0000005`. The gate is back on `clr.dll`, the retry loop waits for the
+   CLR's own JIT, and x64 coverage comes from the `--force` `forcedump`
+   companion (a `PrepareMethod` walk inside the process, no hook needed):
+   **270 bodies**, target exit 0, stable over 4 repeats and two full matrix
+   re-measures (251 restored in the `full` cell). The hook itself is still
+   optional/best-effort on this host.
 2. **JitUnpacker's runtime breadth**: it covers Framework 2.0-3.5;
    our hook targets 4.x. Low priority (Reactor 7.x targets are 4.x),
    but noted for completeness.

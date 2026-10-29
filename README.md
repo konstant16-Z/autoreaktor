@@ -132,8 +132,8 @@ it. The full published grid (7.5.0.0 demo, both flag sets, fresh run —
 |---|---|---|---|---|
 | console net48 x86 \| necro | run-recovered-base-only | — | — | yes |
 | console net48 x86 \| full | run-recovered-base-only | 254 | 259 | yes |
-| console net48 x64 \| necro | run-recovered-base-only | — | 0 | yes |
-| console net48 x64 \| full | run-recovered-base-only | — | 0 | yes |
+| console net48 x64 \| necro | run-recovered-base-only | 167 | 167 | yes |
+| console net48 x64 \| full | run-recovered-base-only | 251 | 270 | yes |
 | console net8 anycpu \| necro | slayer-clean | 171 | 171 | no |
 | console net8 anycpu \| full | slayer-clean | 223 | 231 | no |
 | console+generics net48 x86 \| necro | run-recovered-base-only | 171 | 181 | yes |
@@ -173,17 +173,21 @@ measurements say why:
   already decrypted statically. On this corpus `de4dot` alone produces a
   runnable, behaviour-matching module, so the NecroBit leg is not what makes
   these cells green.
-* **The x64 hook is environment-dependent, not fixed.** The install gate was
-  wrong (`clr.dll` instead of `mscoree.dll` at attach time), and correcting it
-  does let the framework JIT be hooked — one chain run reported `HOOK-OK
-  (framework-path)` and 244 bodies. But it is **not stable**: repeated runs on
-  the same protected target either attach without installing or crash the
-  target (`0xC0000005`) before any body is dumped, which is why both x64 cells
-  report `bodies: 0` in the published matrix while another run reports 244.
-  Injection itself is fine on this host (a control DLL attaches every time),
-  so the instability is in force-loading the framework `clrjit.dll` this
-  early, not in the APC route. A stable x64 leg needs the hook to wait for
-  the CLR's own JIT load instead of pre-loading it.
+* **The x64 leg no longer depends on the fragile hook.** The old failure mode
+  was self-inflicted: the hook forced `LoadLibraryW` of the framework
+  `clrjit.dll` at DLL-attach time (inside the injection APC, when only
+  `mscoree.dll` is mapped). On x64 that either returned a not-yet-initialised
+  JIT (`getJit() -> null`) or killed the target with `0xC0000005` before any
+  body was written. The gate is back on `clr.dll` — the framework engine the
+  process will have once it is really up — and the retry loop waits for the
+  CLR's own JIT. Body coverage on x64 comes from the `--force` companion
+  (`forcedump`, a `PrepareMethod` walk inside the process), which needs no
+  JIT hook: measured **270 bodies** on `con48x64` with the target exiting 0.
+  Repeating the dump 4× gave 270/0-exit every time, and two independent full
+  matrix re-measures produced 270 bodies and 251 restored bodies in the `full`
+  cell. The hook itself still reports `getJit() -> null` on this host, so it
+  is documented as *optional coverage*, not as the mechanism the numbers rest
+  on.
 
 ## Machinery self-test
 

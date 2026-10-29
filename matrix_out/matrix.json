@@ -18,18 +18,18 @@
  {
   "cell": "con48x64|necro",
   "result": "run-recovered-base-only",
-  "restored": null,
-  "bodies": 0,
+  "restored": 167,
+  "bodies": 167,
   "runnable": true,
-  "secs": 210.6
+  "secs": 19399.7
  },
  {
   "cell": "con48x64|full",
   "result": "run-recovered-base-only",
-  "restored": null,
-  "bodies": 0,
+  "restored": 251,
+  "bodies": 270,
   "runnable": true,
-  "secs": 437.9
+  "secs": 904.6
  },
  {
   "cell": "con8|necro",

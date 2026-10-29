@@ -111,22 +111,22 @@ The x64-runnable architecture guessed in T8 ("original-base merge + NecroBit
 runtime table-init preservation") was tested and **rejected by measurement**.
 Findings, all reproducible with `tools/matrix.py` plus `ilverify`:
 
-1. **The x64 hook installs but is NOT stable.** `clrjit_dump64.dll` was
-   never installing: it gated its framework-path `clrjit.dll` load on
-   `GetModuleHandleW("clr.dll")`, but the injection APC runs while only
-   `mscoree.dll` is mapped - `clr.dll` and `clrjit.dll` are both still
-   absent, so the gate fell through, the bare `LoadLibraryW("clrjit.dll")`
-   missed the out-of-search-path framework JIT, and `getJit()` was never
-   reached. Discriminating on `mscoree.dll` makes it install: one chain run
-   reported `SGO-OK HOOK-OK ... (framework-path)` and **244 bodies** from
-   forcedump (was 0, silently). It is not reliable, however - repeating the
-   dump 4x on the same protected target produced `hook=FAIL, bodies=0` every
-   time, with the target dying at `0xC0000005` before any body was dumped,
-   which is why the published matrix shows `bodies: 0` for both x64 cells. A
-   control DLL injected through the same `nbjit_launch.exe` route attaches
-   every time, so the fault is in pre-loading the framework `clrjit.dll` this
-   early, not in APC injection. The stable route is to let the CLR load its
-   own JIT and install the hook from the deferred thread only.
+1. **The x64 hook itself is best-effort, but the x64 leg is now stable.**
+   `clrjit_dump64.dll` was never installing: it gated its framework-path
+   `clrjit.dll` load on `GetModuleHandleW("clr.dll")`, but the injection APC
+   runs while only `mscoree.dll` is mapped. Switching the gate to
+   `mscoree.dll` made it install once (`HOOK-OK`, 244 bodies) but also made
+   it crash the target (`0xC0000005`) on repeats, because it force-loaded a
+   not-yet-initialised JIT that early. The gate is therefore back on
+   `clr.dll`: the hook waits for the process's real engine and the deferred
+   thread retries until the CLR loads its own `clrjit.dll`. Body coverage on
+   x64 does not depend on it - the `--force` `forcedump` companion walks every
+   MethodDef with `PrepareMethod` inside the process and writes the bodies
+   itself: **270 bodies**, target exit 0, identical over 4 repeats, and two
+   independent full matrix re-measures (`251` restored in `full`). The
+   marker still reports `getJit() -> null` on this host, which is why the
+   hook is documented as optional coverage rather than the basis of the
+   numbers.
 
 2. **The body merge does not damage IL.** `ilverify` on the pristine
    protected module and on the 254-body `original`-base merge reports *the

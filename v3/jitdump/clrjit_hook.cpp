@@ -336,7 +336,7 @@ static bool installHook() {
                           (void*)GetModuleHandleW(L"clrjit.dll"), jitPath);
             markerLine(msg);
         }
-        if (GetModuleHandleW(L"clr.dll") || GetModuleHandleW(L"mscoree.dll")) {
+        if (GetModuleHandleW(L"clr.dll")) {
             h = LoadLibraryW(
 #ifdef _WIN64
                 L"C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\clrjit.dll"
