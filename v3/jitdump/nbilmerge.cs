@@ -807,6 +807,15 @@ class NBIlMerge {
         }
         Console.WriteLine("null-wipe: " + nullSil);
 
+        // Run modular passes (AntiDebug, ProxyCall, Tamper neutralization)
+        try {
+            AutoReaktor.Passes.AntiDebugPass.Run(mod);
+            AutoReaktor.Passes.ProxyCallPass.Run(mod);
+            AutoReaktor.Passes.TamperPass.Run(mod);
+        } catch (Exception ex) {
+            Console.WriteLine("[!] Modular passes warning: " + ex.Message);
+        }
+
         // AT-KILL disabled (NB_ATKILL=1 opt-in): PreserveTokens
         // write keeps nb2's CRC intact, no need;
         // if "tampered" reappears, v44 surgery with NB_ATKILL=1.
